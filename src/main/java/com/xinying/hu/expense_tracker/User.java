@@ -1,17 +1,21 @@
 package com.xinying.hu.expense_tracker;
-
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Table(name="users")
 @Entity // This tells Hibernate to make a table out of this class
 public class User {
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Integer id;
 
     private String name;
 
     private String email;
+
+    @OneToMany
+    private List<Expense> expenses;
 
     public Integer getId() {
         return id;
