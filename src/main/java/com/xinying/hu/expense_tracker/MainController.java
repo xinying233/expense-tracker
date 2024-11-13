@@ -17,18 +17,25 @@ public class MainController {
     @Autowired
     private ExpenseRepository expenseRepository;
 
+    @GetMapping(path="/signup")
+    public String signUp() {
+        return "signup";
+    }
+
     @PostMapping(path="/add") // Map ONLY POST Requests
-    public @ResponseBody String addNewUser (@RequestParam String name
-            , @RequestParam String email) {
+    public String addNewUser (@RequestParam String username, @RequestParam String email, Model model) {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
-
+//        model.addAttribute("username", username);
+//        model.addAttribute("email", email);
         User n = new User();
-        n.setName(name);
+        n.setName(username);
         n.setEmail(email);
         userRepository.save(n);
-        return "Saved";
+        return "redirect:/user/index";
     }
+
+
 
     @GetMapping(path="index")
     public String index(Model model) {
