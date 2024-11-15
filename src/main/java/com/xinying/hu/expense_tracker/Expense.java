@@ -16,6 +16,12 @@ public class Expense {
     // TODO: change to Enum
     private String category;
 
+    public Expense(User user, float amount, String category) {
+        this.user = user;
+        this.amount = amount;
+        this.category = category;
+    }
+
     public User getUser() {
         return user;
     }
