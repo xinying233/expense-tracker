@@ -7,6 +7,6 @@ import java.util.List;
 
 
 public interface ExpenseRepository extends CrudRepository<Expense, Integer> {
-//    @Query("FROM Expense e where e.user.id = :userId")
-    List<Expense> findAllByUserId(Integer userId);
+//    @Query("FROM Expense e where e.payer.id = :payerId")
+    List<Expense> findAllByPayerId(Integer payerId);
 }
