@@ -9,35 +9,51 @@ public class Expense {
     private Integer id;
 
     @ManyToOne
-    private User user;
+    private User payer;
+
+    @ManyToOne
+    private User loaner;
 
     private float amount;
+
+    // The percentage that payer splits for
+    private float splitPercent;
 
     // TODO: change to Enum
     private String category;
 
     public Expense() {}
 
-    public Expense(User user, float amount, String category) {
-        this.user = user;
+    public Expense(User payer, User loaner, float amount, float splitPercent, String category) {
+        this.payer = payer;
+        this.loaner = loaner;
         this.amount = amount;
+        this.splitPercent = splitPercent;
         this.category = category;
     }
 
-    public User getUser() {
-        return user;
+    public User getPayer() {
+        return payer;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setPayer(User payer) {
+        this.payer = payer;
+    }
+
+    public User getLoaner() {
+        return loaner;
+    }
+
+    public void setLoaner(User loaner) {
+        this.loaner = loaner;
     }
 
     public Integer getId() {
         return id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public float getSplitPercent() {
+        return splitPercent;
     }
 
     public float getAmount() {
