@@ -29,6 +29,7 @@
                     <tr th:each="user : ${users}">
                         <td th:text="${user.name}"></td>
                         <td th:text="${user.email}"></td>
+<!--                        TODO: add BE logic to edit and delete-->
                         <td><a th:href="@{/edit/{id}(id=${user.id})}" class="btn btn-primary">Edit<i class="fas fa-user-edit ml-2"></i></a></td>
                         <td><a th:href="@{/delete/{id}(id=${user.id})}" class="btn btn-primary">Delete<i class="fas fa-user-times ml-2"></i></a></td>
                     </tr>
