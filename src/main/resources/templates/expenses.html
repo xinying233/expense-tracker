@@ -27,6 +27,7 @@
                     <tr th:each="expense : ${expenses}">
                         <td th:text="${expense.id}"></td>
                         <td th:text="${expense.amount}"></td>
+                        <td th:text="${expense.category}"></td>
                     </tr>
                     </tbody>
                 </table>
