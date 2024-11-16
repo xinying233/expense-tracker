@@ -34,5 +34,16 @@
         </div>
     </div>
 </div>
+
+
+<div>
+    <p th:text="${user.id}">ID will appear here</p>
+    <p th:text="${user.email}">ID will appear here</p>
+    <form th:action="@{/user/{id}/expense/add(id=${user.id})}" method="post">
+        <label>amount: <input type="floatInput" name="amount"></label><br>
+        <label>category: <input type="text" name="category"></label><br>
+        <button type="submit">Add</button>
+    </form>
+</div>
 </body>
 </html>
