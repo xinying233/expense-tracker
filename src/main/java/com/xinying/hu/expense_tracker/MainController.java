@@ -50,14 +50,17 @@ public class MainController {
     @GetMapping(path="/{id}/expenses")
     public String showExpenses (@PathVariable Integer id, Model model) {
 //        List<Expense> expenses = expenseRepository.findAllByUserId(id);
+        User user = userService.findUserById(id);
         model.addAttribute( "expenses", expenseRepository.findAllByUserId(id));
+        model.addAttribute("user", user);
         return "expenses";
     }
 
-    @PostMapping(path="/{id}/add")
+    @PostMapping(path="/{id}/expense/add")
     public String addExpense(@PathVariable Integer id, float amount, String category) {
         User user = userService.findUserById(id);
         Expense expense = new Expense(user, amount, category);
-        return "redirect:/user/index";
+        expenseRepository.save(expense);
+        return "redirect:/user/{id}/expenses";
     }
 }
