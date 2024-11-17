@@ -12,21 +12,23 @@ public class Expense {
     private User payer;
 
     @ManyToOne
-    private User loaner;
+    private User borrower;
 
     private float amount;
 
     // The percentage that payer splits for
     private float splitPercent;
 
+    private boolean settled;
+
     // TODO: change to Enum
     private String category;
 
     public Expense() {}
 
-    public Expense(User payer, User loaner, float amount, float splitPercent, String category) {
+    public Expense(User payer, User borrower, float amount, float splitPercent, String category) {
         this.payer = payer;
-        this.loaner = loaner;
+        this.borrower = borrower;
         this.amount = amount;
         this.splitPercent = splitPercent;
         this.category = category;
@@ -40,12 +42,12 @@ public class Expense {
         this.payer = payer;
     }
 
-    public User getLoaner() {
-        return loaner;
+    public User getBorrower() {
+        return borrower;
     }
 
-    public void setLoaner(User loaner) {
-        this.loaner = loaner;
+    public void setBorrower(User borrower) {
+        this.borrower = borrower;
     }
 
     public Integer getId() {
@@ -70,5 +72,17 @@ public class Expense {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public boolean isSettled() {
+        return settled;
+    }
+
+    public void settleExpense() {
+        this.settled = true;
+    }
+
+    public void unsettle() {
+        this.settled = false;
     }
 }

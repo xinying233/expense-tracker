@@ -55,10 +55,10 @@ public class MainController {
     }
 
     @PostMapping(path="/{id}/expense/add")
-    public String addExpense(@PathVariable Integer id, Integer loanerId, float amount, float splitPercent, String category) {
+    public String addExpense(@PathVariable Integer id, Integer borrowerId, float amount, float splitPercent, String category) {
         User payer = userService.findUserById(id);
-        User loaner = userService.findUserById(loanerId);
-        Expense expense = new Expense(payer, loaner, amount, splitPercent, category);
+        User borrower = userService.findUserById(borrowerId);
+        Expense expense = new Expense(payer, borrower, amount, splitPercent, category);
         expenseRepository.save(expense);
         return "redirect:/user/{id}/expenses";
     }

@@ -27,8 +27,8 @@
                         <th>id</th>
                         <th>amount</th>
                         <th>category</th>
-                        <th>loanerId</th>
-                        <th>split percentage</th>
+                        <th>borrowerId</th>
+                        <th>splitPercent</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -36,7 +36,7 @@
                         <td th:text="${expense.id}"></td>
                         <td th:text="${expense.amount}"></td>
                         <td th:text="${expense.category}"></td>
-                        <td th:text="${expense.loaner.id}"></td>
+                        <td th:text="${expense.borrower.id}"></td>
                         <td th:text="${expense.splitPercent}"></td>
                     </tr>
                     </tbody>
@@ -50,7 +50,7 @@
     <form th:action="@{/user/{id}/expense/add(id=${user.id})}" method="post">
         <label>amount: <input type="floatInput" name="amount"></label><br>
         <label>category: <input type="text" name="category"></label><br>
-        <label>loaner: <input type="number" name="loanerId"></label><br>
+        <label>loaner: <input type="number" name="borrowerId"></label><br>
         <label>split percentage: <input type="number", name="splitPercent"></label>
         <button type="submit">Add</button>
     </form>
