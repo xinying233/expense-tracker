@@ -19,6 +19,7 @@ public class Expense {
     // The percentage that payer splits for
     private float splitPercent;
 
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean settled;
 
     // TODO: change to Enum
