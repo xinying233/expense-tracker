@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/user") // This means URL's start with /demo (after Application path)
 public class MainController {
@@ -47,9 +49,11 @@ public class MainController {
 
     @GetMapping(path="/{id}/expenses")
     public String showExpenses (@PathVariable Integer id, Model model) {
-//        List<Expense> expenses = expenseRepository.findAllByUserId(id);
         User user = mainService.findUserById(id);
-        model.addAttribute( "expenses", expenseRepository.findAllByPayerId(id));
+        List<Expense> expenses = expenseRepository.findAllByPayerId(id);
+        expenses.addAll(expenseRepository.findAllByBorrowerId(id));
+
+        model.addAttribute( "expenses", expenses);
         model.addAttribute("user", user);
         return "expenses";
     }
