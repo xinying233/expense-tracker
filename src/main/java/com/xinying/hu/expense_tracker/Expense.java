@@ -55,6 +55,10 @@ public class Expense {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public float getSplitPercent() {
         return splitPercent;
     }
