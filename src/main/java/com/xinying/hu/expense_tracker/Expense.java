@@ -41,6 +41,10 @@ public class Expense {
         this.category = category;
     }
 
+    public Integer getId() {
+        return id;
+    }
+
     public User getPayer() {
         return payer;
     }
@@ -57,9 +61,7 @@ public class Expense {
         this.borrower = borrower;
     }
 
-    public Integer getId() {
-        return id;
-    }
+    public LocalDate getDate() { return date; }
 
     public float getSplitPercent() {
         return splitPercent;

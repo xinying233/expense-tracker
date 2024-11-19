@@ -57,6 +57,7 @@
 </div>
 
 <div  class="container my-5">
+    <h2 class="my-5">Add Expense</h2>
     <form th:action="@{/user/{id}/expense/add(id=${user.id})}" method="post">
         <label>amount: <input type="floatInput" name="amount"></label><br>
         <label>date: <input type="date" name="date" required></label><br>
