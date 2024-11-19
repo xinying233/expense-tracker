@@ -2,6 +2,7 @@ package com.xinying.hu.expense_tracker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -38,8 +39,8 @@ public class MainService {
     }
 
 //    TODO: create individual expense
-    public void createExpense(User payer, User borrower, float amount, float splitPercent, String category) {
-        Expense expense = new Expense(payer, borrower, amount, splitPercent, category);
+    public void createExpense(User payer, User borrower, LocalDate date, float amount, float splitPercent, String category) {
+        Expense expense = new Expense(payer, borrower, date, amount, splitPercent, category);
         expenseRepository.save(expense);
         UserRelation relation = this.findOrCreateUserRelationByUserIds(payer, borrower);
         relation.addToAmount(payer, (float)(amount * splitPercent * 0.01));

@@ -16,5 +16,7 @@ public interface ExpenseRepository extends CrudRepository<Expense, Integer> {
 
     List<Expense> findAllByBorrowerId(Integer borrowerId);
 
+    List<Expense> findAllByPayerIdAndBorrowerId(Integer payerId, Integer borrowerId);
+
     Optional<Expense> findById(Integer id);
 }

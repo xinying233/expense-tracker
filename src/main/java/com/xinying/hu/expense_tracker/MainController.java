@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,10 +68,10 @@ public class MainController {
     }
 
     @PostMapping(path="/{id}/expense/add")
-    public String addExpense(@PathVariable Integer id, Integer borrowerId, float amount, float splitPercent, String category) {
+    public String addExpense(@PathVariable Integer id, Integer borrowerId, LocalDate date, float amount, float splitPercent, String category) {
         User payer = mainService.findUserById(id);
         User borrower = mainService.findUserById(borrowerId);
-        mainService.createExpense(payer, borrower, amount, splitPercent, category);
+        mainService.createExpense(payer, borrower, date, amount, splitPercent, category);
         return "redirect:/user/{id}/expenses";
     }
 
@@ -89,6 +91,27 @@ public class MainController {
             }
         });
 
+        return "redirect:/user/{userId}/expenses";
+    }
+
+    @PostMapping(path="/{userId}/expenses/{relatedUserId}/settle_all")
+    public String settleAll(@PathVariable Integer userId, @PathVariable Integer relatedUserId) {
+        Optional<User> user = userRepository.findById(userId);
+        Optional<User> relatedUser = userRepository.findById(relatedUserId);
+        if (user.isPresent() && relatedUser.isPresent()) {
+            List<Expense> expenses = expenseRepository.findAllByPayerIdAndBorrowerId(userId, relatedUserId);
+            expenses.addAll(expenseRepository.findAllByPayerIdAndBorrowerId(relatedUserId, userId));
+
+            Iterator<Expense> iterator = expenses.listIterator();
+            while (iterator.hasNext()) { iterator.next().settleExpense(); }
+            expenseRepository.saveAll(expenses);
+
+            Optional<UserRelation> relation = mainService.findUserRelationByUserIds(user.get(), relatedUser.get());
+            relation.ifPresent(theRelation -> {
+                theRelation.setAmount(0);
+                userRelationRepository.save(theRelation);
+            });
+        }
         return "redirect:/user/{userId}/expenses";
     }
 }

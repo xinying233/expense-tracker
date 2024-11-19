@@ -1,6 +1,8 @@
 package com.xinying.hu.expense_tracker;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+
 @Table(name="expenses")
 @Entity
 public class Expense {
@@ -13,6 +15,9 @@ public class Expense {
 
     @ManyToOne
     private User borrower;
+
+    @Column(nullable = false)
+    private LocalDate date;
 
     private float amount;
 
@@ -27,9 +32,10 @@ public class Expense {
 
     public Expense() {}
 
-    public Expense(User payer, User borrower, float amount, float splitPercent, String category) {
+    public Expense(User payer, User borrower, LocalDate date, float amount,  float splitPercent, String category) {
         this.payer = payer;
         this.borrower = borrower;
+        this.date = date;
         this.amount = amount;
         this.splitPercent = splitPercent;
         this.category = category;
