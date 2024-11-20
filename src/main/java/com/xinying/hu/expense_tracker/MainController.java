@@ -1,14 +1,18 @@
 package com.xinying.hu.expense_tracker;
 
+import org.springframework.aop.interceptor.ExposeBeanNameAdvisors;
 import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
+import java.lang.reflect.Executable;
 import java.time.LocalDate;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.time.Month;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/user") // This means URL's start with /demo (after Application path)
@@ -113,5 +117,79 @@ public class MainController {
             });
         }
         return "redirect:/user/{userId}/expenses";
+    }
+
+    @GetMapping(path = "/{id}/visualization")
+    public String visualize(@PathVariable Integer id, Model model) {
+        Optional<User> user = userRepository.findById(id);
+
+        List<Expense> paidExpenses = expenseRepository.findAllByPayerId(id);
+        List<Expense> borrowedExpenses = expenseRepository.findAllByBorrowerId(id);
+
+        // expense by category
+        Map<String, Double> mergedExpensesByCategory = Stream.concat(
+                        paidExpenses.stream().map(e -> new AbstractMap.SimpleEntry<>(e.getCategory(), e.getPayerAmount())),
+                        borrowedExpenses.stream().map(e -> new AbstractMap.SimpleEntry<>(e.getCategory(), e.getBorrowerAmount()))
+                )
+                .collect(Collectors.groupingBy(
+                        Map.Entry::getKey, // Group by category
+                        Collectors.summingDouble(Map.Entry::getValue) // Sum the amounts
+                ));
+
+        // monthly expense
+        Map<Month, Double> mergedExpensesByMonth = Stream.concat(
+                    paidExpenses.stream().map(e -> new AbstractMap.SimpleEntry<>(e.getDate().getMonth(), e.getPayerAmount())),
+                    borrowedExpenses.stream().map(e -> new AbstractMap.SimpleEntry<>(e.getDate().getMonth(), e.getBorrowerAmount()))
+                )
+                .collect(Collectors.groupingBy(
+                        Map.Entry::getKey,
+                        Collectors.summingDouble(Map.Entry::getValue)
+                ));
+
+        // average monthly expense;
+
+        // current month expense
+        Month currentMonth = LocalDate.now().getMonth();
+        Double currentMonthExpense = mergedExpensesByMonth.get(currentMonth);
+
+        // money borrow descend
+        List<UserRelation> borrowedRelations = new ArrayList<UserRelation>();
+        List<UserRelation> lentRelations = new ArrayList<UserRelation>();
+        if (user.isPresent()) {
+            for (UserRelation relation : userRelationRepository.findAllByUserA(user.get())) {
+                if (relation.getAmount() == 0.0) {
+                    // settled
+                    continue;
+                } else if (relation.getAmount() > 0) {
+                    // lent
+                    lentRelations.add(relation);
+                } else {
+                    // borrowed
+                    borrowedRelations.add(relation);
+                }
+            }
+            for (UserRelation relation : userRelationRepository.findAllByUserB((user.get()))) {
+                if (relation.getAmount() == 0.0) {
+                    // settled
+                    continue;
+                } else if (relation.getAmount() > 0) {
+                    // borrowed
+                    borrowedRelations.add(relation);
+                } else {
+                    // lent
+                    lentRelations.add(relation);
+                }
+            }
+        }
+
+
+        model.addAttribute("mergedExpensesByCategory", mergedExpensesByCategory);
+        model.addAttribute("mergedExpensesByMonth", mergedExpensesByMonth);
+        model.addAttribute("currentMonthExpense", currentMonthExpense);
+        model.addAttribute("totalBorrowedAmountByUser", borrowedRelations);
+        model.addAttribute("totalLentAmountByUser", lentRelations);
+        model.addAttribute("user", user.get());
+
+        return "visualization";
     }
 }

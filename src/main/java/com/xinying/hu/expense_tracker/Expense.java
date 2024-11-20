@@ -24,6 +24,10 @@ public class Expense {
     // The percentage that payer splits for
     private float splitPercent;
 
+    private float payerAmount;
+
+    private float borrowerAmount;
+
     @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean settled;
 
@@ -38,6 +42,8 @@ public class Expense {
         this.date = date;
         this.amount = amount;
         this.splitPercent = splitPercent;
+        this.borrowerAmount = (float) 0.01 * splitPercent * amount;
+        this.payerAmount = amount - this.borrowerAmount;
         this.category = category;
     }
 
@@ -74,6 +80,10 @@ public class Expense {
     public void setAmount(float amount) {
         this.amount = amount;
     }
+
+    public float getPayerAmount() { return payerAmount; }
+
+    public float getBorrowerAmount() { return borrowerAmount; }
 
     public String getCategory() {
         return category;
