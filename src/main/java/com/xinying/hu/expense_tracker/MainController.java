@@ -1,5 +1,6 @@
 package com.xinying.hu.expense_tracker;
 
+import org.antlr.v4.runtime.tree.Tree;
 import org.springframework.aop.interceptor.ExposeBeanNameAdvisors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import javax.swing.text.html.Option;
 import java.lang.reflect.Executable;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -138,7 +140,7 @@ public class MainController {
 
         Optional<Expense> expense = expenseRepository.findById(expenseId);
         expense.ifPresent(theExpense -> {
-            if (theExpense.isSettled() == false) {
+            if (!theExpense.isSettled()) {
                 theExpense.settleExpense();
                 expenseRepository.save(theExpense);
 
@@ -190,30 +192,57 @@ public class MainController {
         List<Expense> borrowedExpenses = expenseRepository.findAllByBorrowerId(id);
 
         // expense by category
-        Map<String, Double> mergedExpensesByCategory = Stream.concat(
-                        paidExpenses.stream().map(e -> new AbstractMap.SimpleEntry<>(e.getCategory(), e.getPayerAmount())),
-                        borrowedExpenses.stream().map(e -> new AbstractMap.SimpleEntry<>(e.getCategory(), e.getBorrowerAmount()))
-                )
-                .collect(Collectors.groupingBy(
-                        Map.Entry::getKey, // Group by category
-                        Collectors.summingDouble(Map.Entry::getValue) // Sum the amounts
-                ));
+        TreeMap<String, Float> mergedExpensesByCategory = new TreeMap<>();
+        for(Expense expense : paidExpenses) {
+            String category = expense.getCategory();
+            float amount = expense.getPayerAmount();
+            if (mergedExpensesByCategory.containsKey(category)) {
+                mergedExpensesByCategory.put(category, mergedExpensesByCategory.get(category) + amount);
+            } else {
+                mergedExpensesByCategory.put(category, amount);
+            }
+        }
+        for(Expense expense : borrowedExpenses) {
+            String category = expense.getCategory();
+            float amount = expense.getBorrowerAmount();
+            if(mergedExpensesByCategory.containsKey((category))) {
+                mergedExpensesByCategory.put(category, mergedExpensesByCategory.get(category) + amount);
+            } else {
+                mergedExpensesByCategory.put(category, amount);
+            }
+        }
 
+        Comparator<YearMonth> yearMonthComparator = (ym1, ym2) -> {
+            int yearCompare = ym2.getYear() - ym1.getYear();
+            if (yearCompare != 0) {
+                return yearCompare;
+            } else {
+                return ym2.getMonthValue() - ym1.getMonthValue();
+            }
+        };
         // monthly expense
-        Map<Month, Double> mergedExpensesByMonth = Stream.concat(
-                    paidExpenses.stream().map(e -> new AbstractMap.SimpleEntry<>(e.getDate().getMonth(), e.getPayerAmount())),
-                    borrowedExpenses.stream().map(e -> new AbstractMap.SimpleEntry<>(e.getDate().getMonth(), e.getBorrowerAmount()))
-                )
-                .collect(Collectors.groupingBy(
-                        Map.Entry::getKey,
-                        Collectors.summingDouble(Map.Entry::getValue)
-                ));
-
-        // average monthly expense;
-
+        TreeMap<YearMonth, Float> mergedExpensesByMonth = new TreeMap<>(yearMonthComparator);
+        for(Expense expense : paidExpenses) {
+            YearMonth yearMonth = YearMonth.from(expense.getDate());
+            float amount = expense.getPayerAmount();
+            if (mergedExpensesByMonth.containsKey(yearMonth)) {
+                mergedExpensesByMonth.put(yearMonth, mergedExpensesByMonth.get(yearMonth) + amount);
+            } else {
+                mergedExpensesByMonth.put(yearMonth, amount);
+            }
+        }
+        for(Expense expense : borrowedExpenses) {
+            YearMonth yearMonth = YearMonth.from(expense.getDate());
+            float amount = expense.getBorrowerAmount();
+            if (mergedExpensesByMonth.containsKey(yearMonth)) {
+                mergedExpensesByMonth.put(yearMonth, mergedExpensesByMonth.get(yearMonth) + amount);
+            } else {
+                mergedExpensesByMonth.put(yearMonth, amount);
+            }
+        }
         // current month expense
-        Month currentMonth = LocalDate.now().getMonth();
-        Double currentMonthExpense = mergedExpensesByMonth.get(currentMonth);
+        YearMonth currentYearMonth = YearMonth.from(LocalDate.now());
+        Float currentMonthExpense = mergedExpensesByMonth.get(currentYearMonth);
 
         // money borrow descend
         List<UserRelation> borrowedRelations = new ArrayList<UserRelation>();

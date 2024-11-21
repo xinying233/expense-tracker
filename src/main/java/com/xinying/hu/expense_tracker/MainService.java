@@ -38,7 +38,6 @@ public class MainService {
                 });
     }
 
-//    TODO: create individual expense
     public void createExpense(User payer, User borrower, LocalDate date, float amount, float splitPercent, String category) {
         Expense expense = new Expense(payer, borrower, date, amount, splitPercent, category);
         expenseRepository.save(expense);
