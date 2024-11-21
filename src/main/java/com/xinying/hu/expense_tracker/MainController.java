@@ -98,6 +98,16 @@ public class MainController {
 
         List<Expense> expenses = expenseRepository.findAllByPayerId(id);
         expenses.addAll(expenseRepository.findAllByBorrowerId(id));
+        Comparator<Expense> expenseComparator = (e1, e2) -> {
+            int yearCompare = e2.getDate().getYear() - e1.getDate().getYear();
+            if (yearCompare != 0) {
+                return yearCompare;
+            } else {
+                return e2.getDate().getMonthValue() - e1.getDate().getMonthValue();
+            }
+        };
+        expenses.sort(expenseComparator);
+
         List<UserRelation> relations = userRelationRepository.findAllByUserA(user);
         relations.addAll(userRelationRepository.findAllByUserB(user));
 
@@ -108,15 +118,15 @@ public class MainController {
     }
 
     @PostMapping(path="/{id}/expense/add")
-    public String addExpense(@PathVariable Integer id, Optional<Integer> borrowerId, LocalDate date, float amount, float splitPercent, String category, Authentication authentication) {
+    public String addExpense(@PathVariable Integer id, Optional<String> borrowerName, LocalDate date, float amount, float splitPercent, String category, Authentication authentication) {
         User payer = mainService.findUserById(id);
         String response = checkAuthentication(authentication, payer);
         if (!response.equals("ok")) {
             return response;
         }
 
-        if (borrowerId.isPresent()) {
-            User borrower = mainService.findUserById(borrowerId.get());
+        if (borrowerName.isPresent()) {
+            User borrower = userRepository.findByName(borrowerName.get());
             mainService.createExpense(payer, borrower, date, amount, splitPercent, category);
         } else {
             mainService.createExpense(payer, date, amount, category);
