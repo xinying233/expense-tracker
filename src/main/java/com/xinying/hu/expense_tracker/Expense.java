@@ -14,6 +14,7 @@ public class Expense {
     private User payer;
 
     @ManyToOne
+    @JoinColumn(nullable = true)
     private User borrower;
 
     @Column(nullable = false)
@@ -45,6 +46,17 @@ public class Expense {
         this.borrowerAmount = (float) 0.01 * splitPercent * amount;
         this.payerAmount = amount - this.borrowerAmount;
         this.category = category;
+    }
+
+    public Expense(User payer, LocalDate date, float amount, String category) {
+        this.payer = payer;
+        this.date = date;
+        this.amount = amount;
+        this.splitPercent = 0;
+        this.borrowerAmount = 0;
+        this.payerAmount = amount;
+        this.category = category;
+        this.settled = true;
     }
 
     public Integer getId() {

@@ -46,4 +46,9 @@ public class MainService {
         relation.addToAmount(payer, (float)(amount * splitPercent * 0.01));
         userRelationRepository.save(relation);
     }
+
+    public void createExpense(User payer, LocalDate date, float amount, String category) {
+        Expense expense = new Expense(payer, date, amount, category);
+        expenseRepository.save(expense);
+    }
 }

@@ -28,7 +28,7 @@
                         <th>date</th>
                         <th>amount</th>
                         <th>category</th>
-                        <th>borrowerId</th>
+                        <th>borrower</th>
                         <th>splitPercent</th>
                         <th>settled?</th>
                         <th>action</th>
@@ -40,13 +40,16 @@
                         <td th:text="${expense.date}"></td>
                         <td th:text="${expense.amount}"></td>
                         <td th:text="${expense.category}"></td>
-                        <td th:text="${expense.borrower.id}"></td>
+                        <td th:text="${expense.borrower?.name}"></td>
                         <td th:text="${expense.splitPercent}"></td>
                         <td th:text="${expense.settled}"></td>
                         <td>
-                            <form th:action="@{/user/{userId}/expense/{expenseId}/settle(userId=${user.id}, expenseId=${expense.id})}" method="post">
-                                <button type="submit">settle</button>
-                            </form>
+                            <span th:if="${expense.borrower != null}">
+                                <form th:action="@{/user/{userId}/expense/{expenseId}/settle(userId=${user.id}, expenseId=${expense.id})}" method="post">
+                                    <button type="submit">settle</button>
+                                </form>
+                            </span>
+
                         </td>
                     </tr>
                     </tbody>

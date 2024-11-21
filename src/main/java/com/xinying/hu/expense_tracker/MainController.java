@@ -111,16 +111,19 @@ public class MainController {
     }
 
     @PostMapping(path="/{id}/expense/add")
-    public String addExpense(@PathVariable Integer id, Integer borrowerId, LocalDate date, float amount, float splitPercent, String category, Authentication authentication) {
+    public String addExpense(@PathVariable Integer id, Optional<Integer> borrowerId, LocalDate date, float amount, float splitPercent, String category, Authentication authentication) {
         User payer = mainService.findUserById(id);
-        User borrower = mainService.findUserById(borrowerId);
-
         String response = checkAuthentication(authentication, payer);
         if (!response.equals("ok")) {
             return response;
         }
 
-        mainService.createExpense(payer, borrower, date, amount, splitPercent, category);
+        if (borrowerId.isPresent()) {
+            User borrower = mainService.findUserById(borrowerId.get());
+            mainService.createExpense(payer, borrower, date, amount, splitPercent, category);
+        } else {
+            mainService.createExpense(payer, date, amount, category);
+        }
         return "redirect:/user/{id}/expenses";
     }
 
