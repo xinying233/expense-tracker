@@ -10,6 +10,22 @@
     <!--    <link rel="stylesheet" href="../css/shards.min.css">-->
 </head>
 <body>
+    <nav th:fragment="navbar" class="navbar navbar-expand-md bg-dark navbar-dark">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" th:href="@{/user/{id}/expenses(id=${user.id})}">Expenses</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li><a class="nav-link" th:href="@{/user/{id}/visualization(id=${user.id})}">Visualization</a></li>
+
+                <li><a class="nav-link" th:href="@{/user/signup}">Sign up</a></li>
+
+                <li><a class="nav-link" th:href="@{/logout}">Log out</a></li>
+
+            </ul>
+        </div>
+    </nav>
+
 <div  class="container my-5">
     <p>Username: </p>
     <p th:text="${user.name}"></p><br>
