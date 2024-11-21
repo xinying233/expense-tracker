@@ -11,7 +11,7 @@ public class User {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
 
-    //TODO: ensure unique name
+    @Column(unique = true)
     private String name;
 
     private String password;
