@@ -40,19 +40,17 @@
                 <table class="table table-striped table-responsive-md">
                     <thead>
                     <tr>
-                        <th>id</th>
-                        <th>date</th>
-                        <th>amount</th>
-                        <th>category</th>
-                        <th>borrower</th>
-                        <th>splitPercent</th>
-                        <th>settled?</th>
-                        <th>action</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Category</th>
+                        <th>Split with</th>
+                        <th>Split Percent</th>
+                        <th>Settled?</th>
+                        <th>Action</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="expense : ${expenses}">
-                        <td th:text="${expense.id}"></td>
                         <td th:text="${expense.date}"></td>
                         <td th:text="${expense.amount}"></td>
                         <td th:text="${expense.category}"></td>
@@ -96,10 +94,10 @@
                 <table class="table table-striped table-responsive-md">
                     <thead>
                     <tr>
-                        <th>userA</th>
-                        <th>userB</th>
-                        <th>userB owes userA</th>
-                        <th>settle all</th>
+                        <th>UserA</th>
+                        <th>UserB</th>
+                        <th>UserB owes userA</th>
+                        <th>Settle all</th>
                     </tr>
                     </thead>
                     <tbody>
