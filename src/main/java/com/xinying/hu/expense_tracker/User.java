@@ -1,5 +1,6 @@
 package com.xinying.hu.expense_tracker;
 import jakarta.persistence.*;
+import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchConnectionDetails;
 
 import java.util.List;
 
@@ -10,7 +11,10 @@ public class User {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
 
+    //TODO: ensure unique name
     private String name;
+
+    private String password;
 
     private String email;
 
@@ -31,6 +35,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getEmail() {

@@ -1,6 +1,9 @@
 package com.xinying.hu.expense_tracker;
 
 import org.springframework.aop.interceptor.ExposeBeanNameAdvisors;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -33,6 +36,18 @@ public class MainController {
         this.mainService = mainService;
     }
 
+    private String checkAuthentication(Authentication authentication, User user) {
+        String authenticatedUsername = authentication.getName();
+        if (user == null) {
+            return "not_found";
+        }
+        if (!user.getName().equals(authenticatedUsername)) {
+            return "forbidden";
+        }
+
+        return "ok";
+    }
+
     @GetMapping(path="/signup")
     public String signUp() {
         return "signup";
@@ -42,8 +57,6 @@ public class MainController {
     public String addNewUser (@RequestParam String username, @RequestParam String email, Model model) {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
-//        model.addAttribute("username", username);
-//        model.addAttribute("email", email);
         User n = new User();
         n.setName(username);
         n.setEmail(email);
@@ -51,15 +64,41 @@ public class MainController {
         return "redirect:/user/index";
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserData(@PathVariable Integer id, Authentication authentication) {
+        // Retrieve authenticated user's details
+        String authenticatedUsername = authentication.getName();
+
+        // Load the user record from the database (UserService handles this)
+        User user = mainService.findUserById(id);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Ensure user can only access their own data
+        if (!user.getName().equals(authenticatedUsername)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied");
+        }
+
+        return ResponseEntity.ok(user);
+    }
+
     @GetMapping(path="index")
     public String index(Model model) {
+        // TODO: welcome page
         model.addAttribute("users", userRepository.findAll());
         return "index";
     }
 
     @GetMapping(path="/{id}/expenses")
-    public String showExpenses (@PathVariable Integer id, Model model) {
+    public String showExpenses (@PathVariable Integer id, Model model, Authentication authentication) {
         User user = mainService.findUserById(id);
+
+        String response = checkAuthentication(authentication, user);
+        if (!response.equals("ok")) {
+            return response;
+        }
+
         List<Expense> expenses = expenseRepository.findAllByPayerId(id);
         expenses.addAll(expenseRepository.findAllByBorrowerId(id));
         List<UserRelation> relations = userRelationRepository.findAllByUserA(user);
@@ -72,15 +111,28 @@ public class MainController {
     }
 
     @PostMapping(path="/{id}/expense/add")
-    public String addExpense(@PathVariable Integer id, Integer borrowerId, LocalDate date, float amount, float splitPercent, String category) {
+    public String addExpense(@PathVariable Integer id, Integer borrowerId, LocalDate date, float amount, float splitPercent, String category, Authentication authentication) {
         User payer = mainService.findUserById(id);
         User borrower = mainService.findUserById(borrowerId);
+
+        String response = checkAuthentication(authentication, payer);
+        if (!response.equals("ok")) {
+            return response;
+        }
+
         mainService.createExpense(payer, borrower, date, amount, splitPercent, category);
         return "redirect:/user/{id}/expenses";
     }
 
     @PostMapping(path="/{userId}/expense/{expenseId}/settle")
-    public String settleExpense(@PathVariable Integer expenseId) {
+    public String settleExpense(@PathVariable Integer userId, @PathVariable Integer expenseId, Authentication authentication) {
+        User user = mainService.findUserById(userId);
+
+        String response = checkAuthentication(authentication, user);
+        if (!response.equals("ok")) {
+            return response;
+        }
+
         Optional<Expense> expense = expenseRepository.findById(expenseId);
         expense.ifPresent(theExpense -> {
             if (theExpense.isSettled() == false) {
@@ -99,29 +151,37 @@ public class MainController {
     }
 
     @PostMapping(path="/{userId}/expenses/{relatedUserId}/settle_all")
-    public String settleAll(@PathVariable Integer userId, @PathVariable Integer relatedUserId) {
-        Optional<User> user = userRepository.findById(userId);
-        Optional<User> relatedUser = userRepository.findById(relatedUserId);
-        if (user.isPresent() && relatedUser.isPresent()) {
-            List<Expense> expenses = expenseRepository.findAllByPayerIdAndBorrowerId(userId, relatedUserId);
-            expenses.addAll(expenseRepository.findAllByPayerIdAndBorrowerId(relatedUserId, userId));
+    public String settleAll(@PathVariable Integer userId, @PathVariable Integer relatedUserId, Authentication authentication) {
+        User user = mainService.findUserById(userId);
+        User relatedUser = mainService.findUserById(relatedUserId);
 
-            Iterator<Expense> iterator = expenses.listIterator();
-            while (iterator.hasNext()) { iterator.next().settleExpense(); }
-            expenseRepository.saveAll(expenses);
-
-            Optional<UserRelation> relation = mainService.findUserRelationByUserIds(user.get(), relatedUser.get());
-            relation.ifPresent(theRelation -> {
-                theRelation.setAmount(0);
-                userRelationRepository.save(theRelation);
-            });
+        String response = checkAuthentication(authentication, user);
+        if (!response.equals("ok")) {
+            return response;
         }
+
+        List<Expense> expenses = expenseRepository.findAllByPayerIdAndBorrowerId(userId, relatedUserId);
+        expenses.addAll(expenseRepository.findAllByPayerIdAndBorrowerId(relatedUserId, userId));
+
+        Iterator<Expense> iterator = expenses.listIterator();
+        while (iterator.hasNext()) { iterator.next().settleExpense(); }
+        expenseRepository.saveAll(expenses);
+
+        Optional<UserRelation> relation = mainService.findUserRelationByUserIds(user, relatedUser);
+        relation.ifPresent(theRelation -> {
+            theRelation.setAmount(0);
+            userRelationRepository.save(theRelation);
+        });
         return "redirect:/user/{userId}/expenses";
     }
 
     @GetMapping(path = "/{id}/visualization")
-    public String visualize(@PathVariable Integer id, Model model) {
-        Optional<User> user = userRepository.findById(id);
+    public String visualize(@PathVariable Integer id, Model model, Authentication authentication) {
+        User user = mainService.findUserById(id);
+        String response = checkAuthentication(authentication, user);
+        if (!response.equals("ok")) {
+            return response;
+        }
 
         List<Expense> paidExpenses = expenseRepository.findAllByPayerId(id);
         List<Expense> borrowedExpenses = expenseRepository.findAllByBorrowerId(id);
@@ -155,30 +215,28 @@ public class MainController {
         // money borrow descend
         List<UserRelation> borrowedRelations = new ArrayList<UserRelation>();
         List<UserRelation> lentRelations = new ArrayList<UserRelation>();
-        if (user.isPresent()) {
-            for (UserRelation relation : userRelationRepository.findAllByUserA(user.get())) {
-                if (relation.getAmount() == 0.0) {
-                    // settled
-                    continue;
-                } else if (relation.getAmount() > 0) {
-                    // lent
-                    lentRelations.add(relation);
-                } else {
-                    // borrowed
-                    borrowedRelations.add(relation);
-                }
+        for (UserRelation relation : userRelationRepository.findAllByUserA(user)) {
+            if (relation.getAmount() == 0.0) {
+                // settled
+                continue;
+            } else if (relation.getAmount() > 0) {
+                // lent
+                lentRelations.add(relation);
+            } else {
+                // borrowed
+                borrowedRelations.add(relation);
             }
-            for (UserRelation relation : userRelationRepository.findAllByUserB((user.get()))) {
-                if (relation.getAmount() == 0.0) {
-                    // settled
-                    continue;
-                } else if (relation.getAmount() > 0) {
-                    // borrowed
-                    borrowedRelations.add(relation);
-                } else {
-                    // lent
-                    lentRelations.add(relation);
-                }
+        }
+        for (UserRelation relation : userRelationRepository.findAllByUserB((user))) {
+            if (relation.getAmount() == 0.0) {
+                // settled
+                continue;
+            } else if (relation.getAmount() > 0) {
+                // borrowed
+                borrowedRelations.add(relation);
+            } else {
+                // lent
+                lentRelations.add(relation);
             }
         }
 
@@ -188,7 +246,7 @@ public class MainController {
         model.addAttribute("currentMonthExpense", currentMonthExpense);
         model.addAttribute("totalBorrowedAmountByUser", borrowedRelations);
         model.addAttribute("totalLentAmountByUser", lentRelations);
-        model.addAttribute("user", user.get());
+        model.addAttribute("user", user);
 
         return "visualization";
     }
