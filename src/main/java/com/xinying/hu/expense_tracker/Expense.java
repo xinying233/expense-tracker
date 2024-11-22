@@ -81,6 +81,10 @@ public class Expense {
 
     public LocalDate getDate() { return date; }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public float getSplitPercent() {
         return splitPercent;
     }
