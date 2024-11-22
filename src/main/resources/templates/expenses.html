@@ -18,9 +18,11 @@
             <ul class="nav navbar-nav">
                 <li><a class="nav-link" th:href="@{/user/{id}/visualization(id=${user.id})}">Visualization</a></li>
 
+                <li><a class="nav-link" th:herf="@{/user/index}">Users</a> </li>
+
                 <li><a class="nav-link" th:href="@{/user/signup}">Sign up</a></li>
 
-                <li><a class="nav-link" th:href="@{/logout}">Log out</a></li>
+                <li><a class="nav-link" th:href="@{/user/logout}">Log out</a></li>
 
             </ul>
         </div>
