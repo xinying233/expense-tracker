@@ -1,6 +1,9 @@
 package com.xinying.hu.expense_tracker;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.antlr.v4.runtime.tree.Tree;
+import org.apache.coyote.Response;
 import org.springframework.aop.interceptor.ExposeBeanNameAdvisors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,12 +54,13 @@ public class MainController {
     }
 
     @PostMapping(path="/add") // Map ONLY POST Requests
-    public String addNewUser (@RequestParam String username, @RequestParam String email, Model model) {
+    public String addNewUser (@RequestParam String username, @RequestParam String email, @RequestParam String password) {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
         User n = new User();
         n.setName(username);
         n.setEmail(email);
+        n.setPassword(password);
         userRepository.save(n);
         return "redirect:/user/index";
     }
@@ -82,7 +86,6 @@ public class MainController {
 
     @GetMapping(path="index")
     public String index(Model model) {
-        // TODO: welcome page
         model.addAttribute("users", userRepository.findAll());
         return "index";
     }

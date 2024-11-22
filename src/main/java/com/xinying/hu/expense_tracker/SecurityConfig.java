@@ -1,15 +1,11 @@
 package com.xinying.hu.expense_tracker;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 
 @Configuration
 @EnableWebSecurity
@@ -25,8 +21,16 @@ public class SecurityConfig {
                 .httpBasic() // Use Basic Auth (or .formLogin() for form-based login)
                 .and()
                 .logout()
-                .logoutUrl("/logout") // Specify the logout URL
-                .logoutSuccessUrl("/user/index") // Redirect to login page after logout
+                .logoutUrl("/user/logout") // Specify the logout URL
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    // Get the current host
+                    String currentHost = request.getServerName() + ":" + request.getServerPort();
+                    String scheme = request.getScheme();
+                    String logoutRedirectUrl = scheme + "://invalidusername:invalidpassword@" + currentHost + "/user/index";
+
+                    // Perform the redirect
+                    response.sendRedirect(logoutRedirectUrl);
+                })
                 .invalidateHttpSession(true) // Invalidate the session
                 .deleteCookies("JSESSIONID"); // Remove the session cookie
 
