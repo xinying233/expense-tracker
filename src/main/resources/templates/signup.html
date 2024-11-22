@@ -2,15 +2,23 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sign Up</title>
 </head>
 <body>
 
-    <form th:action="@{/user/add}" method="post">
-        <label>Username: <input type="text" name="username"></label><br>
-        <label>Email: <input type="text" name="email"></label><br>
-        <button type="submit">Add</button>
-    </form>
+    <div class="container my-5">
+        <h2 class="my-5">Add user</h2>
+        <form th:action="@{/user/add}" method="post">
+            <label>Username: <input type="text" name="username"></label><br>
+            <label>Email: <input type="text" name="email"></label><br>
+            <label>Password: <input type="text" name="password"></label><br>
+            <button type="submit">Add</button>
+        </form>
+    </div>
+
 </body>
 </html>
 
